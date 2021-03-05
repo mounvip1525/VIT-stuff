@@ -54,7 +54,6 @@ void take_fork(int phnum)
 //put down chopsticks
 void put_fork(int phnum)
 {
-    //access critical section
     sem_wait(&mutex); 
     // state that thinking
     state[phnum] = THINKING;
