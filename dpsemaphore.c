@@ -55,14 +55,14 @@ void take_fork(int phnum)
 void put_fork(int phnum)
 {
     sem_wait(&mutex); 
-    // state that thinking
+   
     state[phnum] = THINKING;
     printf("Philosopher %d putting", phnum + 1);
 	printf(" fork %d and %d down\n", LEFT + 1, phnum + 1);
     printf("Philosopher %d is thinking\n", phnum + 1);
     test(LEFT);
     test(RIGHT);
-    //leave critical section
+   
     sem_post(&mutex);
 }
 
