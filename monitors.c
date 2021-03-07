@@ -1,4 +1,4 @@
-//Implementing reader writer 
+//Implementing reader writer using monitors
 #include <iostream> 
 #include <pthread.h> 
 #include <unistd.h> 
