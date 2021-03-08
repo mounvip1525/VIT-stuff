@@ -68,7 +68,7 @@ public:
     } 
 } 
 M; 
-  
+  //reader
 void* reader(int* id) 
 { 
     int c = 0; 
@@ -80,7 +80,7 @@ void* reader(int* id)
         c++; 
     } 
 } 
-  
+  //writer
 void* writer(int* id) 
 { 
     int c = 0; 
