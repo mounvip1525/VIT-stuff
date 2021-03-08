@@ -92,7 +92,7 @@ void* writer(int* id)
         c++; 
     } 
 } 
-  
+  //5 readers and 5 writers 
 int main() 
 { 
     pthread_t r[5], w[5]; 
