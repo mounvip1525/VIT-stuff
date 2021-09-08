@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>HTML Forms</title>
+</head>
+<body style="text-align:center">
+    <header>
+        <h1>Welcome to Deets</h1>
+        <p>We collect and provide information in a exciting way, Save once and use anywhere is our motto</p>
+    </header>
+    <img src="./img.png" alt="Welcome to deets" height="350" style="object-fit: contain;"/>
+    <form action="./submit.html" method="post" target="_blank" autocomplete="on">
+        <h1>Let's get to know you</h1>
+
+        <fieldset style="text-align: left;">
+            <legend>Personal Info</legend>
+
+            <label for="name">Name:</label><br>
+            <input type="text" id="name" name="name" minlength="3" maxlength="55" autofocus required><br>
+
+            <label>Gender:</label><br>
+            <input type="radio" name="gender"><label for="gender">Male:</label>
+            <input type="radio" name="gender"><label for="gender">Female:</label><br>
+
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email" placeholder="example@address.com" required><br>
+
+            <label for="phone">Enter your phone number:</label><br>
+            <input type="tel" id="phone" name="phone" pattern="[0-9+]{3,4} [0-9 ]{4,15}" placeholder="+91 XXXXXXXXXX" required>
+
+            <label for='country'>Country</label>
+            <input type="text" disabled id="country" value='India' name="country" />
+
+            <label for="dob">Date of birth:</label><br>
+            <input type="date" id="dob" name="dob" required><br>
+
+            <label for="color">Favourite Color:</label><br>
+            <input type="color" id="color" name="color" required><br>
+
+        </fieldset>
+
+        <fieldset style="text-align: left;">
+            <legend>Professional Details</legend>
+
+            <label for="resume">Resume:</label><br>
+            <input type="file" id="resume" name="resume" accept="application/pdf" required><br>
+
+            <label for="experience">Work Experience:</label><br>
+            <input type="range" id="experience" name="experience" required max="5" min="0" step="1"><br>
+
+            <label for="website">Website</label><br>
+            <input type="url" id="website" name="website" placeholder="https://yourwebsite.com"><br>
+
+            <label>You are currently looking for?</label><br>
+            <input type="checkbox" name="question1" checked><label for="question1">Job:</label>
+            <input type="checkbox" name="question2"><label for="question2">Internship:</label>
+            <input type="checkbox" name="question3" disabled><label for="question3">Freelancing:</label><br>
+
+            <label for="about">Tell us about Technical skills and interests</label>
+            <textarea rows="5" required> </textarea>
+        </fieldset>
+
+        <fieldset style="text-align: left;">
+            <legend>Curiosity</legend>
+            
+            <label for="how">How did you know about Deets</label><br>
+            <select name="how" required style="margin-bottom:10px">
+                <option value="Instagram">Instagram</option>
+                <option value="Facebook">Facebook</option>
+                <option value="Email" selected>Email</option>
+                <option value="Friend/Family">Friend/Family</option>
+            </select><br>
+
+            <label>How many social handles do you have?</label><br>
+            <input type="number" id="social" name="social" required min="1"><br>
+        </fieldset>
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
