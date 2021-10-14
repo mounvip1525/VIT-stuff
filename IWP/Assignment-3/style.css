@@ -1,0 +1,266 @@
+body {
+  padding: 0;
+  margin: 0;
+  min-height: 100vh;
+}
+main {
+  display:none;
+}
+header {
+  background: rgba(10, 44, 83, 0.938);
+  padding: 1%;
+}
+header img {
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  position: absolute;
+  top: 1%;
+  left: 1%;
+}
+nav {
+  background: rgba(25, 59, 97, 0.938);
+  align-items: center;
+  height: 40px;
+}
+ul {
+  list-style-type: none;
+  float: right;
+  display: block;
+  width: 500px;
+  text-align: end;
+}
+li {
+  display: inline;
+}
+li a {
+  margin: 1%;
+}
+a {
+  text-decoration: none;
+  color: white;
+}
+footer {
+  background: rgba(25, 59, 97, 0.938);
+}
+figure img {
+  object-fit: contain;
+  height: 20rem;
+  margin: 2%;
+}
+.product-main > div {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+}
+.product-main div article {
+  margin: 0.5%;
+  background: rgba(128, 128, 128, 0.11);
+  padding: 2%;
+  border-radius: 5px;
+}
+.product-main div img {
+  object-fit: cover;
+}
+.a-tag {
+  color: purple;
+}
+article header {
+  color: white;
+  font-family: "Segoe UI";
+  font-size: large;
+}
+.sm-article {
+  background: rgba(128, 128, 128, 0.11);
+  padding: 2%;
+  text-align: justify;
+  margin: 2%;
+}
+#more,
+#prodMore,
+#welcome {
+  background: rgba(10, 44, 83, 0.938);
+  cursor: pointer;
+  color: white;
+  padding: 1%;
+  border: none;
+  outline: none;
+}
+#prodMore {
+  margin-bottom: 2%;
+}
+#moreText {
+  width: 70%;
+  margin: 1% auto;
+  background: rgba(10, 44, 83, 0.3);
+  padding: 1%;
+}
+#a1,
+#a2,
+#a3,
+#a4 {
+  display: none;
+}
+#welcome {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 15% auto;
+  font-size: x-large;
+}
+.display-none {
+  display: none !important;
+}
+#stop {
+  position: absolute;
+  top: 1%;
+  right: 1%;
+}
+label {
+  font-size: 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+fieldset {
+  border: 2px solid rgba(10, 44, 83, 0.938);
+  padding: 5%;
+  margin: 5% auto;
+  width: 30%;
+}
+legend {
+  font-size: 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+input {
+  margin-bottom: 10px;
+  margin-top: 2px;
+  border: 1.5px solid black;
+  outline: none;
+  box-sizing: border-box;
+}
+input {
+  transition: all 0.3s;
+  padding: 3px 5px;
+  border: 1px solid black;
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+  height: 40px;
+  font-size: large;
+  background: none;
+  margin: 2% auto !important;
+}
+input[type="submit"] {
+  width: 40%;
+  display: flex;
+  justify-content: center;
+}
+input[type="submit"]:hover {
+  background: rgba(10, 44, 83, 0.938);
+  color: white;
+  border: none;
+}
+input[type="submit"]:active {
+  transform: scale(0.9);
+}
+input:disabled:hover {
+  cursor: not-allowed;
+  border: 1.5px solid black;
+  background: none;
+  color: unset;
+}
+table {
+  border-collapse: collapse;
+  width: 80%;
+  margin: auto;
+}
+
+td,
+th {
+  text-align: left;
+  padding: 8px;
+}
+.highlight {
+  background-color: #dddddd;
+}
+.sucessImg {
+  height: 20rem;
+}
+#tb {
+  width: 50%;
+  margin: auto;
+}
+ol {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+}
+#selectable .ui-selecting {
+  background: #feca40;
+}
+#selectable .ui-selected + #id0 {
+  background: blue;
+}
+#selectable .ui-selected + #id1 {
+  background: red;
+}
+#selectable .ui-selected + #id2 {
+  background: green;
+}
+#selectable .ui-selected + #id3 {
+  background: pink;
+}
+#selectable .ui-selected + #id4 {
+  background: yellow;
+}
+#selectable .ui-selected + #id5 {
+  background: purple;
+}
+#selectable {
+  list-style-type: none;
+  margin: 0 auto;
+  padding: 0;
+}
+#selectable li {
+  margin: 3px;
+  padding: 0.4em;
+  font-size: 1.4em;
+  height: 18px;
+}
+#game{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    width:60%;
+    margin:3% auto;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
+#draggable {
+  width: 100px;
+  height: 100px;
+  background: none;
+  padding: 0.5em;
+  float: left;
+  margin: 10px 10px 10px 0;
+  border:none;
+}
+#droppable {
+  width: 300px;
+  height: 300px;
+  padding: 2em;
+  margin: 10px auto;
+}
+#umb{
+    height:100px;
+}
+#help{
+    height:300px;
+}
+.ui-state-highlight{
+    background:red !important;
+}
+h5{
+    margin-bottom: -10%;
+}
+.mb{
+    margin-bottom: -15%;
+}

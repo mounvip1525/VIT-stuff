@@ -1,0 +1,217 @@
+<html>
+
+<head>
+    <title>Umbrella House</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css" />
+</head>
+
+<body style="overflow-x: hidden">
+    <header style="text-align: center; color: white">
+        <h2 id="heading">Welcome to the Umbrella House</h2>
+        <img src="./img/gala1.jpg" />
+    </header>
+    <nav style="float: right; width: 100%">
+        <ul>
+            <li><a href="#products">Products</a></li>
+            <li><a href="#galas">Galas</a></li>
+            <li>
+                <a href="mailto:mounvip1525@gmail.com?subject=Umbrella%20House">Contact</a>
+            </li>
+        </ul>
+    </nav>
+    <button id='stop'>STOP</button>
+    <button id="welcome">START EXPLORING</button>
+    <div id="wDiv"
+        style="background: rgb(10, 44, 83); height: 50px; width: 50px; position: absolute;left:610px;bottom:130px; border-radius: 90px;">
+    </div>
+    <main style="text-align: center">
+        <figure id="fig">
+            <img src="/img/gala1.jpg" height="500" width="500" style="margin-top: 3%" />
+            <figcaption>
+                The umbrella house is a 2021 established community where we sell
+                beautiful umbrellas to our customers and let you know about the most
+                special umbrella gala's around the world!
+            </figcaption>
+        </figure>
+        <button id="more">Tell us more about the origin of Umbrella House</button>
+        <p id="moreText">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Natus quo at doloremque quod debitis
+            neque tenetur deleniti, eum ipsa, praesentium nostrum. Nobis dolorum ipsa magnam pariatur reiciendis saepe
+            at deserunt? Lorem ipsum dolor sit, amet consectetur adipisicing elit. Molestiae nesciunt magni voluptates
+            quis nam qui quos ducimus eligendi corrupti sequi facilis commodi ex, sunt natus. Ipsa ea optio facilis
+            atque! Lorem ipsum dolor sit amet consectetur adipisicing elit. Labore ipsum doloribus placeat et qui nobis
+            unde, delectus iusto pariatur minima corporis reiciendis commodi ab itaque, obcaecati voluptas, tempore
+            distinctio molestiae!</p>
+
+        <div style="display: inline-flex; padding: 3%; width: 90%">
+            <section class="gala-main" id="galas" style="width: 70%; border: 2px solid purple">
+                <h2>Umbrella Galas</h2>
+                <div>
+                    <article>
+                        <img src="/img/gala2.jpg" height="300" width="600" />
+                        <h3>West Side Gala</h3>
+                        <a href="attend.html">Attend</a>
+                    </article>
+                    <article>
+                        <img src="/img/gala1.jpg" height="300" width="600" />
+                        <h3>East Side Gala</h3>
+                        <a href="attend.html">Attend</a>
+                    </article>
+                </div>
+            </section>
+            <aside style="
+            width: 25%;
+            border: 2px solid purple;
+            margin: 0 2%;
+            clear: both;
+          ">
+                <div id="accordion">
+                    <h3>West side gala</h3>
+                    <div style="font-size: small;">
+                      Mauris mauris ante, blandit et, ultrices a, suscipit eget, quam. Integer
+                      ut neque. Vivamus nisi metus, molestie vel, gravida in, condimentum sit
+                      amet, nunc. Nam a nibh. Donec suscipit eros. Nam mi. Proin viverra leo ut
+                      odio. Curabitur malesuada. Vestibulum a velit eu ante scelerisque vulputate.
+                    </div>
+                    <h3>East side gala</h3>
+                    <div style="font-size: small;">
+                      Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+                      purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+                      velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+                      suscipit faucibus urna.
+                    </div>
+                    <h3>West side gala</h3>
+                    <div style="font-size: small;">
+                      Nam enim risus, molestie et, porta ac, aliquam ac, risus. Quisque lobortis.
+                      Phasellus pellentesque purus in massa. Aenean in pede. Phasellus ac libero
+                      ac tellus pellentesque semper. Sed ac felis. Sed commodo, magna quis
+                      lacinia ornare, quam ante aliquam nisi, eu iaculis leo purus venenatis dui.
+                    </div>
+                  </div>
+                <article class="sm-article">
+                    We are an enthusiastic team delivering a great user experience to
+                    both our internal and external, We are an enthusiastic team
+                    delivering a great user experience to both our internal and
+                    external, We are an enthusiastic team delivering a great user
+                    experience to both our internal and external, We are an enthusiastic
+                    team delivering a great user experience to both our internal and
+                    external, We are an enthusiastic team delivering a great user
+                    experience to both our internal and external, We are an enthusiastic
+                    team delivering a great user experience to both our internal and
+                    external We are an enthusiastic team delivering a great user
+                    experience to both our internal and external, We are an enthusiastic
+                    team delivering a great user experience to both our internal and
+                    external, We are an enthusiastic team delivering a great user
+                    experience to both our internal and external, We are an enthusiastic
+                    team delivering a great user experience to both our internal and
+                    external, We are an enthusiastic team delivering a great user
+                    experience to both our internal and external, We are an enthusiastic
+                    team delivering a great user experience to both our internal and
+                    external
+                </article>
+            </aside>
+        </div>
+        <section class="product-main" id="products">
+            <h2>Our Products</h2>
+            <button id="prodMore">Show Products</button>
+            <div id="prods">
+                <article id="a1">
+                    <img src="img/blue.jpg" alt="Blue Umbrella" height="250" width="250" />
+                    <h3><mark>Blue Bae</mark></h3>
+                    <a href="blue.html" class="a-tag">Details</a>
+                </article>
+                <article id="a2">
+                    <img src="/img/pink.jpg" alt="Pink Umbrella" height="250" width="250" />
+                    <h3><mark>Pink Beauty</mark></h3>
+                    <a href="pink.html" class="a-tag">Details</a>
+                </article>
+                <article id="a3">
+                    <img src="img/yellow.jpg" alt="Yellow Umbrella" height="250" width="250" />
+                    <h3><mark>Yellow Dwell</mark></h3>
+                    <a href="yellow.html" class="a-tag">Details</a>
+                </article>
+                <article id="a4">
+                    <img src="img/traditional.jpg" alt="Traditional Umbrella" height="250" width="250" />
+                    <h3><mark>Authentic Us</mark></h3>
+                    <a href="traditional.html" class="a-tag">Details</a>
+                </article>
+            </div>
+        </section>
+        <section id="tb">
+            <h2 style="text-align: center;">Our Key Partners</h2>
+            <input id="myInput" type="text" placeholder="Search..">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody id="myTable">
+                    <tr>
+                        <td>John</td>
+                        <td>john@example.com</td>
+                    </tr>
+                    <tr>
+                        <td>Mary</td>
+                        <td>mary@mail.com</td>
+                    </tr>
+                    <tr>
+                        <td>July</td>
+                        <td>july@greatstuff.com</td>
+                    </tr>
+                    <tr>
+                        <td>Anja</td>
+                        <td>a_r@test.com</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section>
+            <h2 style="text-align: center;">Choose your favourite Umbrella colors</h2>
+            <ol id="selectable">
+                <li class="ui-widget-content" id="id0">Blue</li>
+                <li class="ui-widget-content" id="id1">Red</li>
+                <li class="ui-widget-content" id="id2">Green</li>
+                <li class="ui-widget-content" id="id3">Pink</li>
+                <li class="ui-widget-content" id="id4">Yellow</li>
+                <li class="ui-widget-content" id="id5">Purple</li>
+              </ol>
+        </section>
+        <section id="game">
+            <h2 style="text-align: center;">Play the Umbrella Game</h2>
+            <h5 style="margin-top: -2%;font-weight: normal;" id="save">Save Kitty from becoming wet</h5>
+            <div id="draggable" class="ui-widget-content">
+                <img src="/img/umbrella.gif" alt="Umbrella" id="umb"/>
+            </div>
+               
+              <div id="droppable" class="ui-widget-header">
+                <img src="/img/raining.gif" alt="Please help, I'm getting wet" id="help"/>
+              </div>
+        </section>
+        <section>
+            <fieldset style="text-align: left;">
+                <legend>Contact Us</legend>
+                <form autocomplete="off">
+                    <label for="email">Email:</label><br>
+                    <input type="email" id="email" name="email" placeholder="example@address.com"><br>
+                    <label for="message">Message:</label><br>
+                    <input type="text" id="message" name="message"><br>
+                    <input type="submit" value="Submit">
+                </form>
+            </fieldset>
+            <img id="success">
+        </section>
+        <footer style="padding: 1%; color: white">
+            <p style="display: inline">Made by Mounvi</p>
+            <p style="float: right; margin: 0">Lab Assignment - 08/10/2021</p>
+        </footer>
+    </main>
+    <script src="script.js"></script>
+</body>
+
+</html>
