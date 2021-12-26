@@ -1,1 +1,1 @@
-<h1>Academic assignments </h1>
+<h1>VIT - Academic assignments </h1>
