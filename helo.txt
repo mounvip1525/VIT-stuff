@@ -1,32 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-function FileViewer() {
-  const [text, setText] = useState('');
+function FileViewer(props) {
+  const [fileContent, setFileContent] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch('DeploySample.txt');
-      const data = await response.text();
-      const lines = data.split('\n');
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i < lines.length) {
-          setText(prevText => prevText + lines[i] + '\n');
+  const handleClick = async () => {
+    const response = await fetch(props.filePath);
+    const text = await response.text();
+    const lines = text.split('\n');
+    const formattedLines = lines.map((line, index) => {
+      if (line.includes(props.highlightWord)) {
+        return { line: line, status: 'highlighted' };
+      } else {
+        return { line: line, status: '' };
+      }
+    });
+    setFileContent(formattedLines);
+
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < formattedLines.length) {
+        setFileContent(prevContent => {
+          const newContent = [...prevContent];
+          newContent[i].status = formattedLines[i].status;
           i++;
-        } else {
-          clearInterval(interval);
-        }
-      }, 50);
-    };
-    fetchData();
-  }, []);
+          return newContent;
+        });
+      } else {
+        clearInterval(interval);
+      }
+    }, 50);
+  }
 
   return (
-    <div className="file-viewer">
-      <pre>{text}</pre>
+    <div>
+      <button onClick={handleClick}>Show File</button>
+      <div className="file-content">
+        {fileContent.map((line, index) => (
+          <div key={index} className={line.status}>{line.line}</div>
+        ))}
+      </div>
+      <style>
+        {`
+        .highlighted {
+          color: red;
+        }
+        `}
+      </style>
     </div>
   );
 }
 
 export default FileViewer;
-
