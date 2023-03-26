@@ -1,30 +1,32 @@
-const path = require('path');
+import React, { useState, useEffect } from 'react';
 
-const container = {
-  entry: './src/index.js',
-  output: {
-    filename: 'main.js',
-    path: path.resolve(__dirname, 'dist'),
-    publicPath: '/dist/',
-  },
-  module: {
-    rules: [
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
-          },
-        },
-      },
-      {
-        test: /\.txt$/i,
-        use: 'raw-loader',
-      },
-    ],
-  },
-};
+function FileViewer() {
+  const [text, setText] = useState('');
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch('DeploySample.txt');
+      const data = await response.text();
+      const lines = data.split('\n');
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i < lines.length) {
+          setText(prevText => prevText + lines[i] + '\n');
+          i++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 50);
+    };
+    fetchData();
+  }, []);
+
+  return (
+    <div className="file-viewer">
+      <pre>{text}</pre>
+    </div>
+  );
+}
+
+export default FileViewer;
 
