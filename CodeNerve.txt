@@ -1,0 +1,58 @@
+8:13:07 PM: Build ready to start
+8:13:09 PM: build-image version: 3571f0130496395a23bffe9820bc78b4f73a6234
+8:13:09 PM: build-image tag: v3.7.0
+8:13:09 PM: git clone https://github.com/mounvip1525/My-Portfolio
+8:13:12 PM: Parsing package.json dependencies
+8:13:13 PM: Starting build script
+8:13:13 PM: Installing dependencies
+8:14:01 PM: NPM modules installed
+8:14:03 PM: ​
+8:14:03 PM: ────────────────────────────────────────────────────────────────
+8:14:03 PM:   Netlify Build                                                 
+8:14:03 PM: ────────────────────────────────────────────────────────────────
+8:14:03 PM: ​
+8:14:03 PM: ❯ Version
+8:14:03 PM:   @netlify/build 9.11.4
+8:14:03 PM: ​
+8:14:03 PM: ❯ Current directory
+8:14:03 PM:   /opt/build/repo
+8:14:03 PM: ​
+8:14:03 PM: ────────────────────────────────────────────────────────────────
+8:14:03 PM:   1. Build command from Netlify app                             
+8:14:03 PM: ────────────────────────────────────────────────────────────────
+8:14:03 PM: ​
+8:14:03 PM: $ npm run build
+8:14:04 PM: > myportfolio@0.1.0 build /opt/build/repo
+8:14:04 PM: > react-scripts build
+8:14:05 PM: Creating an optimized production build...
+8:14:24 PM: Compiled successfully.
+8:14:24 PM: 
+8:14:24 PM:   npm install -g serve
+8:14:24 PM:   serve -s build
+8:14:24 PM: Find out more about deployment here:
+8:14:24 PM:   https://cra.link/deployment
+8:14:24 PM: ​
+8:14:24 PM: (build.command completed in 20.7s)
+8:14:24 PM: ​
+8:14:24 PM: ────────────────────────────────────────────────────────────────
+8:14:24 PM:   2. Deploy site                                                
+8:14:24 PM: ────────────────────────────────────────────────────────────────
+8:14:24 PM: ​
+8:14:24 PM: Starting to deploy site from 'build'
+8:14:24 PM: Creating deploy tree 
+8:14:24 PM: Creating deploy upload records
+8:14:24 PM: Site deploy was successfully initiated
+8:14:24 PM: ​
+8:14:24 PM: (Deploy site completed in 169ms)
+8:14:24 PM: ​
+8:14:24 PM: ────────────────────────────────────────────────────────────────
+8:14:24 PM:   Netlify Build Complete                                        
+8:14:24 PM: ────────────────────────────────────────────────────────────────
+8:14:24 PM: ​
+8:14:24 PM: (Netlify Build completed in 21s)
+8:14:24 PM: Caching artifacts
+8:14:24 PM: Finished saving maven dependencies
+8:14:24 PM: Finished saving go dependencies
+8:14:25 PM: Site is live ✨
+8:14:27 PM: Build script success
+8:14:48 PM: Finished processing build request in 1m39.286858304s
