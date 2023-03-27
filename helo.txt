@@ -1,73 +1,291 @@
-import { useState, useRef } from 'react';
+@Data
+public class VO {
+    @NotNull
+    @Valid
+    private Config config;
+    @NotNull
+    private List<Field> fieldList;
 
-const App = () => {
-  const [list, setList] = useState([
-    <React.Suspense key={1}><div>Item 1</div></React.Suspense>,
-    <React.Suspense key={2}><div>Item 2</div></React.Suspense>,
-    <React.Suspense key={3}><div>Item 3</div></React.Suspense>,
-    <React.Suspense key={4}><div>Item 4</div></React.Suspense>,
-    <React.Suspense key={5}><div>Item 5</div></React.Suspense>,
-    <React.Suspense key={6}><div>Item 6</div></React.Suspense>
-  ]);
-  const dragItem = useRef(null);
-  const dragOverItem = useRef(null);
+    @Data
+    public static class Config {
+        @NotNull
+        @DataFormatConstraint
+        private String format;
+        @NotNull
+        private Integer rows;
+        @NotNull
+        private Boolean headers;
+    }
 
-  const handleDragStart = (e, position) => {
-    dragItem.current = position;
-    e.target.style.opacity = 0.5; // Set the opacity of the dragged item
-  };
+    @Data
+    public static class Field {
+        @NotNull
+        private String fieldName;
+        @NotNull
+        private String fieldType;
+        @NotNull
+        private String fieldGenType;
+        private String formula;
+        private String nullPer;
+        private String fieldSeq;
+        @Valid
+        private List<Field> fieldList;
 
-  const handleDragEnter = (e, position) => {
-    dragOverItem.current = position;
-    e.target.style.border = '1px solid blue'; // Add a blue border to the drop target
-  };
+        public boolean isFormulaValid() {
+            if ("derived".equals(fieldGenType)) {
+                if (formula == null || formula.isBlank()) {
+                    return false;
+                }
+                String[] tokens = formula.split("\\(");
+                String functionName = tokens[0].trim();
+                if (!ALLOWED_FUNCTIONS.contains(functionName)) {
+                    return false;
+                }
+                String[] args = tokens[1].replaceAll("\\)", "").split(",");
+                if (args.length != 2) {
+                    return false;
+                }
+                String arg1 = args[0].trim();
+                String arg2 = args[1].trim();
+                if (!isNumericField(arg1) || !isNumericField(arg2)) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-  const handleDragLeave = (e) => {
-    e.target.style.border = 'none'; // Remove the border from the drop target
-  };
+        private boolean isNumericField(String fieldName) {
+            if (fieldList != null) {
+                for (Field f : fieldList) {
+                    if (fieldName.equals(f.getFieldName())) {
+                        return "number".equals(f.getFieldType());
+                    }
+                }
+            }
+            return false;
+        }
+    }
 
-  const handleDrop = () => {
-    const copyList = [...list];
-    const dragItemContent = copyList[dragItem.current];
-    copyList.splice(dragItem.current, 1);
-    copyList.splice(dragOverItem.current, 0, dragItemContent);
-    dragItem.current = null;
-    dragOverItem.current = null;
-    setList(copyList);
-  };
+    private static final Set<String> ALLOWED_FUNCTIONS = new HashSet<>(Arrays.asList("add", "subtract", "multiply", "divide"));
+}
 
-  const handleDragEnd = (e) => {
-    e.target.style.opacity = 1; // Reset the opacity of the dragged item
-    e.target.style.border = 'none'; // Remove the border from the drop target
-  };
+==========================
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <h2>Drag and drop items to reorder the list:</h2>
-      {list.map((item, index) => (
-        <div
-          key={index}
-          style={{
-            margin: '10px',
-            padding: '10px',
-            backgroundColor: 'lightblue',
-            borderRadius: '5px',
-            cursor: 'grab',
-            opacity: 1,
-            border: '1px solid gray' // Add a gray border to the draggable items
-          }}
-          draggable
-          onDragStart={(e) => handleDragStart(e, index)}
-          onDragEnter={(e) => handleDragEnter(e, index)}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onDragEnd={handleDragEnd}
-        >
-          {item}
-        </div>
-      ))}
-    </div>
-  );
-};
+public class DerivedFieldValidator implements ConstraintValidator<DerivedFieldConstraint, VO.Field> {
 
-export default App;
+    private static final List<String> ALLOWED_FUNCTIONS = Arrays.asList("add", "subtract", "multiply", "divide");
+
+    @Override
+    public boolean isValid(VO.Field field, ConstraintValidatorContext context) {
+        if ("derived".equals(field.getFieldGenType())) {
+            String formula = field.getFormula();
+            if (formula == null || formula.isBlank()) {
+                return false;
+            }
+            Pattern pattern = Pattern.compile("(\\w+)\\((\\w+),\\s*(\\w+)\\)");
+            Matcher matcher = pattern.matcher(formula);
+            if (!matcher.matches() || matcher.groupCount() != 3) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("{add.function.invalid.format}")
+                        .addConstraintViolation();
+                return false;
+            }
+            String functionName = matcher.group(1);
+            String arg1 = matcher.group(2);
+            String arg2 = matcher.group(3);
+            if (!ALLOWED_FUNCTIONS.contains(functionName)) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("{add.function.not.allowed}")
+                        .addConstraintViolation();
+                return false;
+            }
+            if (!isNumeric(arg1) || !isNumeric(arg2)) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("{add.function.invalid.arguments}")
+                        .addConstraintViolation();
+                return false;
+            }
+            List<VO.Field> fieldList = field.getFieldList();
+            if (fieldList == null || fieldList.isEmpty()) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("{add.function.field.list.empty}")
+                        .addConstraintViolation();
+                return false;
+            }
+            boolean arg1Found = false;
+            boolean arg2Found = false;
+            for (VO.Field f : fieldList) {
+                if (arg1.equals(f.getFieldName())) {
+                    arg1Found = true;
+                    if (!"number".equals(f.getFieldType())) {
+                        context.disableDefaultConstraintViolation();
+                        context.buildConstraintViolationWithTemplate("{add.function.invalid.argument.type}")
+                                .addConstraintViolation();
+                        return false;
+                    }
+                } else if (arg2.equals(f.getFieldName())) {
+                    arg2Found = true;
+                    if (!"number".equals(f.getFieldType())) {
+                        context.disableDefaultConstraintViolation();
+                        context.buildConstraintViolationWithTemplate("{add.function.invalid.argument.type}")
+                                .addConstraintViolation();
+                        return false;
+                    }
+                }
+                if (arg1Found && arg2Found) {
+                    break;
+                }
+            }
+            if (!arg1Found || !arg2Found) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("{add.function.argument.not.found}")
+                        .addConstraintViolation();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isNumeric(String str) {
+        return str != null && str.matches("-?\\d+(\\.\\d+)?");
+    }
+}
+=================
+@Data
+public class VO {
+    @NotNull
+    @Valid
+    private Config config;
+    @NotNull
+    private List<Field> fieldList;
+
+    @Data
+    public static class Config {
+        @NotNull
+        @DataFormatConstraint
+        private String format;
+        @NotNull
+        private Integer rows;
+        @NotNull
+        private Boolean headers;
+    }
+
+    @Data
+    public static class Field {
+        @NotNull
+        private String fieldName;
+        @NotNull
+        private String fieldType;
+        @NotNull
+        private String fieldGenType;
+        private String formula;
+        private String nullPer;
+        private String fieldSeq;
+        @Valid
+        private List<Field> fieldList;
+
+        @AssertTrue(message = "Formula is required for derived fields")
+        private boolean isValidFormula() {
+            if ("derived".equals(fieldGenType)) {
+                return formula != null && !formula.isBlank();
+            }
+            return true;
+        }
+
+        @AssertTrue(message = "Invalid formula")
+        private boolean isValidFormulaExpression() {
+            if ("derived".equals(fieldGenType) && formula != null && !formula.isBlank()) {
+                String[] tokens = formula.split("\\(");
+                String functionName = tokens[0];
+                String argumentsStr = tokens[1].substring(0, tokens[1].length() - 1);
+                String[] arguments = argumentsStr.split(",");
+                int expectedArgumentCount = getExpectedArgumentCount(functionName);
+                if (arguments.length != expectedArgumentCount) {
+                    return false;
+                }
+                for (String argument : arguments) {
+                    if (!isNumeric(argument) && !isField(argument)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return true;
+        }
+
+        private boolean isField(String argument) {
+            return fieldList != null && fieldList.stream().anyMatch(f -> f.getFieldName().equals(argument));
+        }
+
+        private int getExpectedArgumentCount(String functionName) {
+            switch (functionName) {
+                case "add":
+                case "subtract":
+                case "multiply":
+                case "divide":
+                    return 2;
+                case "concat":
+                case "substring":
+                    return 3;
+                default:
+                    return 0;
+            }
+        }
+
+        private boolean isNumeric(String str) {
+            return str != null && str.matches("-?\\d+(\\.\\d+)?");
+        }
+    }
+}
+====================
+private boolean validateFunctionParameters(String function, List<String> parameters, List<Field> fieldList) {
+    // Validate that all parameters exist in the fieldList and are of numeric type
+    for (String parameter : parameters) {
+        Field parameterField = getFieldByName(parameter, fieldList);
+        if (parameterField == null) {
+            return false;
+        }
+        if (!isNumeric(parameterField.getFieldType())) {
+            return false;
+        }
+    }
+    
+    // Validate that the number of parameters match the expected number of parameters for the function
+    int expectedParamCount = getExpectedParameterCount(function);
+    if (expectedParamCount == -1 || parameters.size() != expectedParamCount) {
+        return false;
+    }
+    
+    return true;
+}
+
+private int getExpectedParameterCount(String function) {
+    switch (function) {
+        case "add":
+        case "subtract":
+        case "multiply":
+        case "divide":
+            return 2;
+        case "avg":
+        case "max":
+        case "min":
+            return -1; // variable number of parameters
+        default:
+            return -2; // function not recognized
+    }
+}
+
+private Field getFieldByName(String fieldName, List<Field> fieldList) {
+    for (Field field : fieldList) {
+        if (field.getFieldName().equals(fieldName)) {
+            return field;
+        }
+    }
+    return null;
+}
