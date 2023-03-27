@@ -1,53 +1,113 @@
-import React, { useState } from 'react';
+import javax.validation.Constraint;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-function FileViewer(props) {
-  const [fileContent, setFileContent] = useState([]);
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = {FieldListValidator.class})
+public @interface FieldListConstraint {
+    String message() default "Field list validation failed";
 
-  const handleClick = async () => {
-    const response = await fetch(props.filePath);
-    const text = await response.text();
-    const lines = text.split('\n');
-    const formattedLines = lines.map((line, index) => {
-      if (line.includes(props.highlightWord)) {
-        return { line: line, status: 'highlighted' };
-      } else {
-        return { line: line, status: '' };
-      }
-    });
-    setFileContent(formattedLines);
+    Class<?>[] groups() default {};
 
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < formattedLines.length) {
-        setFileContent(prevContent => {
-          const newContent = [...prevContent];
-          newContent[i].status = formattedLines[i].status;
-          i++;
-          return newContent;
-        });
-      } else {
-        clearInterval(interval);
-      }
-    }, 50);
-  }
-
-  return (
-    <div>
-      <button onClick={handleClick}>Show File</button>
-      <div className="file-content">
-        {fileContent.map((line, index) => (
-          <div key={index} className={line.status}>{line.line}</div>
-        ))}
-      </div>
-      <style>
-        {`
-        .highlighted {
-          color: red;
-        }
-        `}
-      </style>
-    </div>
-  );
+    Class<? extends Payload>[] payload() default {};
 }
 
-export default FileViewer;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import java.util.List;
+
+public class FieldListValidator implements ConstraintValidator<FieldListConstraint, List<Field>> {
+
+    @Override
+    public boolean isValid(List<Field> value, ConstraintValidatorContext context) {
+        return value != null && !value.isEmpty() &&
+                value.stream().allMatch(v -> {
+                    if ("Object".equals(v.getFieldType())) {
+                        return v.getFieldList() != null && !v.getFieldList().isEmpty() &&
+                                v.getFieldList().stream().allMatch(f -> new ObjectFieldValidator().isValid(f, context));
+                    }
+                    return true;
+                });
+    }
+}
+
+import javax.validation.Constraint;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import javax.validation.Payload;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = {ObjectFieldValidator.class})
+public @interface ObjectFieldList {
+    String message() default "Object field list validation failed";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
+}
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
+public class ObjectFieldValidator implements ConstraintValidator<ObjectFieldList, Field> {
+
+    @Override
+    public boolean isValid(Field value, ConstraintValidatorContext context) {
+        return "Object".equals(value.getFieldType()) ?
+                (value.getFieldList() != null ?
+                        value.getFieldList().stream()
+                                .allMatch(v -> new ObjectFieldValidator().isValid(v, context))
+                        : false) : true;
+    }
+}
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
+@Data
+public class VO {
+    @NotNull
+    @Valid
+    private Config config;
+    @NotNull
+    @FieldListConstraint
+    private List<Field> fieldList;
+}
+
+@Data
+public class Config {
+    @NotNull
+    private String format;
+    @NotNull
+    private Integer rows;
+    @NotNull
+    private Boolean headers;
+}
+
+@Data
+public class Field {
+    @NotNull
+    private String fieldName;
+    @NotNull
+    private String fieldType;
+    @NotNull
+    private String fieldGenType;
+    private String formula;
+    private String nullPer;
+    private String fieldSeq;
+    @Valid
+    @ObjectFieldList
+    private List<Field> fieldList;
+}
