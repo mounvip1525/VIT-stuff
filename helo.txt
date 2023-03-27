@@ -1,28 +1,11 @@
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
-public class DataFormatValidator implements ConstraintValidator<EnumValidator, String> {
-    private DataFormat[] enumValues;
-
-    @Override
-    public void initialize(EnumValidator annotation) {
-        Class<? extends Enum<?>> enumClass = annotation.enumClass();
-        if (!enumClass.isEnum()) {
-            throw new IllegalArgumentException("The annotated class must be an enum");
-        }
-        enumValues = DataFormat.values();
-    }
-
-    @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        if (value == null) {
-            return false;
-        }
-        for (DataFormat enumValue : enumValues) {
-            if (value.toUpperCase().equals(enumValue.name())) {
-                return true;
-            }
-        }
-        return false;
-    }
-}
+style={{
+            backgroundColor: draggedItem === index ? 'lightblue' : 'white',
+            margin: '20px 25%',
+            textAlign: 'center',
+            fontSize: '40px',
+            border:
+              draggedItem === index
+                ? '2px dashed blue'
+                : '2px solid black',
+            cursor: 'move',
+          }}
