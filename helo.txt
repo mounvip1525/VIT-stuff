@@ -1,113 +1,28 @@
-import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import javax.validation.Payload;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {FieldListValidator.class})
-public @interface FieldListConstraint {
-    String message() default "Field list validation failed";
-
-    Class<?>[] groups() default {};
-
-    Class<? extends Payload>[] payload() default {};
-}
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import java.util.List;
-
-public class FieldListValidator implements ConstraintValidator<FieldListConstraint, List<Field>> {
+public class DataFormatValidator implements ConstraintValidator<EnumValidator, String> {
+    private DataFormat[] enumValues;
 
     @Override
-    public boolean isValid(List<Field> value, ConstraintValidatorContext context) {
-        return value != null && !value.isEmpty() &&
-                value.stream().allMatch(v -> {
-                    if ("Object".equals(v.getFieldType())) {
-                        return v.getFieldList() != null && !v.getFieldList().isEmpty() &&
-                                v.getFieldList().stream().allMatch(f -> new ObjectFieldValidator().isValid(f, context));
-                    }
-                    return true;
-                });
+    public void initialize(EnumValidator annotation) {
+        Class<? extends Enum<?>> enumClass = annotation.enumClass();
+        if (!enumClass.isEnum()) {
+            throw new IllegalArgumentException("The annotated class must be an enum");
+        }
+        enumValues = DataFormat.values();
     }
-}
-
-import javax.validation.Constraint;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.Payload;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Target({ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {ObjectFieldValidator.class})
-public @interface ObjectFieldList {
-    String message() default "Object field list validation failed";
-
-    Class<?>[] groups() default {};
-
-    Class<? extends Payload>[] payload() default {};
-}
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
-public class ObjectFieldValidator implements ConstraintValidator<ObjectFieldList, Field> {
 
     @Override
-    public boolean isValid(Field value, ConstraintValidatorContext context) {
-        return "Object".equals(value.getFieldType()) ?
-                (value.getFieldList() != null ?
-                        value.getFieldList().stream()
-                                .allMatch(v -> new ObjectFieldValidator().isValid(v, context))
-                        : false) : true;
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return false;
+        }
+        for (DataFormat enumValue : enumValues) {
+            if (value.toUpperCase().equals(enumValue.name())) {
+                return true;
+            }
+        }
+        return false;
     }
-}
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.List;
-
-@Data
-public class VO {
-    @NotNull
-    @Valid
-    private Config config;
-    @NotNull
-    @FieldListConstraint
-    private List<Field> fieldList;
-}
-
-@Data
-public class Config {
-    @NotNull
-    private String format;
-    @NotNull
-    private Integer rows;
-    @NotNull
-    private Boolean headers;
-}
-
-@Data
-public class Field {
-    @NotNull
-    private String fieldName;
-    @NotNull
-    private String fieldType;
-    @NotNull
-    private String fieldGenType;
-    private String formula;
-    private String nullPer;
-    private String fieldSeq;
-    @Valid
-    @ObjectFieldList
-    private List<Field> fieldList;
 }
