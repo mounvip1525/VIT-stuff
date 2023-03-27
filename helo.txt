@@ -1,11 +1,73 @@
-style={{
-            backgroundColor: draggedItem === index ? 'lightblue' : 'white',
-            margin: '20px 25%',
-            textAlign: 'center',
-            fontSize: '40px',
-            border:
-              draggedItem === index
-                ? '2px dashed blue'
-                : '2px solid black',
-            cursor: 'move',
+import { useState, useRef } from 'react';
+
+const App = () => {
+  const [list, setList] = useState([
+    <React.Suspense key={1}><div>Item 1</div></React.Suspense>,
+    <React.Suspense key={2}><div>Item 2</div></React.Suspense>,
+    <React.Suspense key={3}><div>Item 3</div></React.Suspense>,
+    <React.Suspense key={4}><div>Item 4</div></React.Suspense>,
+    <React.Suspense key={5}><div>Item 5</div></React.Suspense>,
+    <React.Suspense key={6}><div>Item 6</div></React.Suspense>
+  ]);
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
+
+  const handleDragStart = (e, position) => {
+    dragItem.current = position;
+    e.target.style.opacity = 0.5; // Set the opacity of the dragged item
+  };
+
+  const handleDragEnter = (e, position) => {
+    dragOverItem.current = position;
+    e.target.style.border = '1px solid blue'; // Add a blue border to the drop target
+  };
+
+  const handleDragLeave = (e) => {
+    e.target.style.border = 'none'; // Remove the border from the drop target
+  };
+
+  const handleDrop = () => {
+    const copyList = [...list];
+    const dragItemContent = copyList[dragItem.current];
+    copyList.splice(dragItem.current, 1);
+    copyList.splice(dragOverItem.current, 0, dragItemContent);
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setList(copyList);
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = 1; // Reset the opacity of the dragged item
+    e.target.style.border = 'none'; // Remove the border from the drop target
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <h2>Drag and drop items to reorder the list:</h2>
+      {list.map((item, index) => (
+        <div
+          key={index}
+          style={{
+            margin: '10px',
+            padding: '10px',
+            backgroundColor: 'lightblue',
+            borderRadius: '5px',
+            cursor: 'grab',
+            opacity: 1,
+            border: '1px solid gray' // Add a gray border to the draggable items
           }}
+          draggable
+          onDragStart={(e) => handleDragStart(e, index)}
+          onDragEnter={(e) => handleDragEnter(e, index)}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onDragEnd={handleDragEnd}
+        >
+          {item}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default App;
