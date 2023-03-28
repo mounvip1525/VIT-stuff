@@ -1,291 +1,92 @@
-@Data
-public class VO {
-    @NotNull
-    @Valid
-    private Config config;
-    @NotNull
-    private List<Field> fieldList;
+public class TreeNode {
+    private String name;
+    private Set<String> permissions;
+    private List<TreeNode> children;
 
-    @Data
-    public static class Config {
-        @NotNull
-        @DataFormatConstraint
-        private String format;
-        @NotNull
-        private Integer rows;
-        @NotNull
-        private Boolean headers;
+    public TreeNode(String name) {
+        this.name = name;
+        this.permissions = new HashSet<>();
+        this.children = new ArrayList<>();
     }
 
-    @Data
-    public static class Field {
-        @NotNull
-        private String fieldName;
-        @NotNull
-        private String fieldType;
-        @NotNull
-        private String fieldGenType;
-        private String formula;
-        private String nullPer;
-        private String fieldSeq;
-        @Valid
-        private List<Field> fieldList;
-
-        public boolean isFormulaValid() {
-            if ("derived".equals(fieldGenType)) {
-                if (formula == null || formula.isBlank()) {
-                    return false;
-                }
-                String[] tokens = formula.split("\\(");
-                String functionName = tokens[0].trim();
-                if (!ALLOWED_FUNCTIONS.contains(functionName)) {
-                    return false;
-                }
-                String[] args = tokens[1].replaceAll("\\)", "").split(",");
-                if (args.length != 2) {
-                    return false;
-                }
-                String arg1 = args[0].trim();
-                String arg2 = args[1].trim();
-                if (!isNumericField(arg1) || !isNumericField(arg2)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        private boolean isNumericField(String fieldName) {
-            if (fieldList != null) {
-                for (Field f : fieldList) {
-                    if (fieldName.equals(f.getFieldName())) {
-                        return "number".equals(f.getFieldType());
-                    }
-                }
-            }
-            return false;
-        }
+    public String getName() {
+        return name;
     }
 
-    private static final Set<String> ALLOWED_FUNCTIONS = new HashSet<>(Arrays.asList("add", "subtract", "multiply", "divide"));
-}
-
-==========================
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-public class DerivedFieldValidator implements ConstraintValidator<DerivedFieldConstraint, VO.Field> {
-
-    private static final List<String> ALLOWED_FUNCTIONS = Arrays.asList("add", "subtract", "multiply", "divide");
-
-    @Override
-    public boolean isValid(VO.Field field, ConstraintValidatorContext context) {
-        if ("derived".equals(field.getFieldGenType())) {
-            String formula = field.getFormula();
-            if (formula == null || formula.isBlank()) {
-                return false;
-            }
-            Pattern pattern = Pattern.compile("(\\w+)\\((\\w+),\\s*(\\w+)\\)");
-            Matcher matcher = pattern.matcher(formula);
-            if (!matcher.matches() || matcher.groupCount() != 3) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate("{add.function.invalid.format}")
-                        .addConstraintViolation();
-                return false;
-            }
-            String functionName = matcher.group(1);
-            String arg1 = matcher.group(2);
-            String arg2 = matcher.group(3);
-            if (!ALLOWED_FUNCTIONS.contains(functionName)) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate("{add.function.not.allowed}")
-                        .addConstraintViolation();
-                return false;
-            }
-            if (!isNumeric(arg1) || !isNumeric(arg2)) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate("{add.function.invalid.arguments}")
-                        .addConstraintViolation();
-                return false;
-            }
-            List<VO.Field> fieldList = field.getFieldList();
-            if (fieldList == null || fieldList.isEmpty()) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate("{add.function.field.list.empty}")
-                        .addConstraintViolation();
-                return false;
-            }
-            boolean arg1Found = false;
-            boolean arg2Found = false;
-            for (VO.Field f : fieldList) {
-                if (arg1.equals(f.getFieldName())) {
-                    arg1Found = true;
-                    if (!"number".equals(f.getFieldType())) {
-                        context.disableDefaultConstraintViolation();
-                        context.buildConstraintViolationWithTemplate("{add.function.invalid.argument.type}")
-                                .addConstraintViolation();
-                        return false;
-                    }
-                } else if (arg2.equals(f.getFieldName())) {
-                    arg2Found = true;
-                    if (!"number".equals(f.getFieldType())) {
-                        context.disableDefaultConstraintViolation();
-                        context.buildConstraintViolationWithTemplate("{add.function.invalid.argument.type}")
-                                .addConstraintViolation();
-                        return false;
-                    }
-                }
-                if (arg1Found && arg2Found) {
-                    break;
-                }
-            }
-            if (!arg1Found || !arg2Found) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate("{add.function.argument.not.found}")
-                        .addConstraintViolation();
-                return false;
-            }
-        }
-        return true;
+    public Set<String> getPermissions() {
+        return permissions;
     }
 
-    private boolean isNumeric(String str) {
-        return str != null && str.matches("-?\\d+(\\.\\d+)?");
-    }
-}
-=================
-@Data
-public class VO {
-    @NotNull
-    @Valid
-    private Config config;
-    @NotNull
-    private List<Field> fieldList;
-
-    @Data
-    public static class Config {
-        @NotNull
-        @DataFormatConstraint
-        private String format;
-        @NotNull
-        private Integer rows;
-        @NotNull
-        private Boolean headers;
+    public List<TreeNode> getChildren() {
+        return children;
     }
 
-    @Data
-    public static class Field {
-        @NotNull
-        private String fieldName;
-        @NotNull
-        private String fieldType;
-        @NotNull
-        private String fieldGenType;
-        private String formula;
-        private String nullPer;
-        private String fieldSeq;
-        @Valid
-        private List<Field> fieldList;
-
-        @AssertTrue(message = "Formula is required for derived fields")
-        private boolean isValidFormula() {
-            if ("derived".equals(fieldGenType)) {
-                return formula != null && !formula.isBlank();
-            }
-            return true;
-        }
-
-        @AssertTrue(message = "Invalid formula")
-        private boolean isValidFormulaExpression() {
-            if ("derived".equals(fieldGenType) && formula != null && !formula.isBlank()) {
-                String[] tokens = formula.split("\\(");
-                String functionName = tokens[0];
-                String argumentsStr = tokens[1].substring(0, tokens[1].length() - 1);
-                String[] arguments = argumentsStr.split(",");
-                int expectedArgumentCount = getExpectedArgumentCount(functionName);
-                if (arguments.length != expectedArgumentCount) {
-                    return false;
-                }
-                for (String argument : arguments) {
-                    if (!isNumeric(argument) && !isField(argument)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            return true;
-        }
-
-        private boolean isField(String argument) {
-            return fieldList != null && fieldList.stream().anyMatch(f -> f.getFieldName().equals(argument));
-        }
-
-        private int getExpectedArgumentCount(String functionName) {
-            switch (functionName) {
-                case "add":
-                case "subtract":
-                case "multiply":
-                case "divide":
-                    return 2;
-                case "concat":
-                case "substring":
-                    return 3;
-                default:
-                    return 0;
-            }
-        }
-
-        private boolean isNumeric(String str) {
-            return str != null && str.matches("-?\\d+(\\.\\d+)?");
-        }
+    public void addChild(TreeNode child) {
+        children.add(child);
     }
-}
-====================
-private boolean validateFunctionParameters(String function, List<String> parameters, List<Field> fieldList) {
-    // Validate that all parameters exist in the fieldList and are of numeric type
-    for (String parameter : parameters) {
-        Field parameterField = getFieldByName(parameter, fieldList);
-        if (parameterField == null) {
-            return false;
-        }
-        if (!isNumeric(parameterField.getFieldType())) {
-            return false;
-        }
-    }
-    
-    // Validate that the number of parameters match the expected number of parameters for the function
-    int expectedParamCount = getExpectedParameterCount(function);
-    if (expectedParamCount == -1 || parameters.size() != expectedParamCount) {
-        return false;
-    }
-    
-    return true;
-}
 
-private int getExpectedParameterCount(String function) {
-    switch (function) {
-        case "add":
-        case "subtract":
-        case "multiply":
-        case "divide":
-            return 2;
-        case "avg":
-        case "max":
-        case "min":
-            return -1; // variable number of parameters
-        default:
-            return -2; // function not recognized
+    public void addPermission(String permission) {
+        permissions.add(permission);
+    }
+
+    public void addPermissions(Set<String> permissions) {
+        this.permissions.addAll(permissions);
     }
 }
 
-private Field getFieldByName(String fieldName, List<Field> fieldList) {
-    for (Field field : fieldList) {
-        if (field.getFieldName().equals(fieldName)) {
-            return field;
+public class Main {
+    public static void main(String[] args) {
+        // Create the tree hierarchy
+        TreeNode mainManager = new TreeNode("Main Manager");
+
+        TreeNode user1 = new TreeNode("User1");
+        user1.addPermission("CYQ_READ");
+        user1.addPermission("TEST_WRITE");
+        TreeNode user11 = new TreeNode("User11");
+        user11.addPermission("CYQ_WRITE");
+        TreeNode user111 = new TreeNode("User111");
+        user111.addPermission("CYQ_READ");
+
+        TreeNode user12 = new TreeNode("User12");
+        user12.addPermission("TEST_READ");
+
+        TreeNode user2 = new TreeNode("User2");
+        user2.addPermission("FEDNOW_READ");
+
+        // Add the nodes to the tree
+        user1.addChild(user11);
+        user11.addChild(user111);
+        mainManager.addChild(user1);
+        mainManager.addChild(user12);
+        mainManager.addChild(user2);
+
+        // Traverse the tree hierarchy to determine permissions
+        traverseTree(mainManager);
+
+        // Print out the permissions for each node
+        System.out.println("Permissions for Main Manager:");
+        printPermissions(mainManager);
+        System.out.println("Permissions for User1:");
+        printPermissions(user1);
+        System.out.println("Permissions for User11:");
+        printPermissions(user11);
+        System.out.println("Permissions for User111:");
+        printPermissions(user111);
+        System.out.println("Permissions for User12:");
+        printPermissions(user12);
+        System.out.println("Permissions for User2:");
+        printPermissions(user2);
+    }
+
+    private static void traverseTree(TreeNode node) {
+        // Add the node's permissions to all its children
+        for (TreeNode child : node.getChildren()) {
+            child.addPermissions(node.getPermissions());
+            traverseTree(child);
         }
     }
-    return null;
+
+    private static void printPermissions(TreeNode node) {
+        System.out.println(node.getName() + ": " + node.getPermissions());
+    }
 }
