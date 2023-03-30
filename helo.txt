@@ -1,92 +1,30 @@
-public class TreeNode {
-    private String name;
-    private Set<String> permissions;
-    private List<TreeNode> children;
-
-    public TreeNode(String name) {
-        this.name = name;
-        this.permissions = new HashSet<>();
-        this.children = new ArrayList<>();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Set<String> getPermissions() {
-        return permissions;
-    }
-
-    public List<TreeNode> getChildren() {
-        return children;
-    }
-
-    public void addChild(TreeNode child) {
-        children.add(child);
-    }
-
-    public void addPermission(String permission) {
-        permissions.add(permission);
-    }
-
-    public void addPermissions(Set<String> permissions) {
-        this.permissions.addAll(permissions);
-    }
+private void handleTwoArgumentFunction(FunctionDefinition fd, String[] args, FieldDataType argumentType) {
+    fd.setFunctionType("Math");
+    fd.setArgumentCount(2);
+    fd.getArgumentTypes().add(argumentType);
+    fd.getArgumentTypes().add(argumentType);
 }
 
-public class Main {
-    public static void main(String[] args) {
-        // Create the tree hierarchy
-        TreeNode mainManager = new TreeNode("Main Manager");
-
-        TreeNode user1 = new TreeNode("User1");
-        user1.addPermission("CYQ_READ");
-        user1.addPermission("TEST_WRITE");
-        TreeNode user11 = new TreeNode("User11");
-        user11.addPermission("CYQ_WRITE");
-        TreeNode user111 = new TreeNode("User111");
-        user111.addPermission("CYQ_READ");
-
-        TreeNode user12 = new TreeNode("User12");
-        user12.addPermission("TEST_READ");
-
-        TreeNode user2 = new TreeNode("User2");
-        user2.addPermission("FEDNOW_READ");
-
-        // Add the nodes to the tree
-        user1.addChild(user11);
-        user11.addChild(user111);
-        mainManager.addChild(user1);
-        mainManager.addChild(user12);
-        mainManager.addChild(user2);
-
-        // Traverse the tree hierarchy to determine permissions
-        traverseTree(mainManager);
-
-        // Print out the permissions for each node
-        System.out.println("Permissions for Main Manager:");
-        printPermissions(mainManager);
-        System.out.println("Permissions for User1:");
-        printPermissions(user1);
-        System.out.println("Permissions for User11:");
-        printPermissions(user11);
-        System.out.println("Permissions for User111:");
-        printPermissions(user111);
-        System.out.println("Permissions for User12:");
-        printPermissions(user12);
-        System.out.println("Permissions for User2:");
-        printPermissions(user2);
-    }
-
-    private static void traverseTree(TreeNode node) {
-        // Add the node's permissions to all its children
-        for (TreeNode child : node.getChildren()) {
-            child.addPermissions(node.getPermissions());
-            traverseTree(child);
+private Map<String, Consumer<FunctionDefinition>> functionDefinitions = Map.of(
+        "add", fd -> handleTwoArgumentFunction(fd, null, FieldDataType.INTEGER),
+        "sub", fd -> handleTwoArgumentFunction(fd, null, FieldDataType.INTEGER),
+        "mul", fd -> handleTwoArgumentFunction(fd, null, FieldDataType.INTEGER),
+        "div", fd -> handleTwoArgumentFunction(fd, null, FieldDataType.INTEGER),
+        "concat", fd -> {
+            fd.setFunctionType("String");
+            fd.setArgumentCount(2);
+            fd.getArgumentTypes().add(FieldDataType.STRING);
+            fd.getArgumentTypes().add(FieldDataType.STRING);
         }
-    }
+);
 
-    private static void printPermissions(TreeNode node) {
-        System.out.println(node.getName() + ": " + node.getPermissions());
+public FunctionDefinition(String functionName, String[] arguments) {
+    functionDefinitions.getOrDefault(functionName, fd -> {
+        fd.setFunctionType("Undefined");
+        fd.setArgumentCount(0);
+    }).accept(this);
+    
+    if (arguments != null) {
+        this.setArguments(arguments);
     }
 }
