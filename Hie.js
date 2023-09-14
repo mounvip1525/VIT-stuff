@@ -1,77 +1,43 @@
-// import './App.scss';
-import './Hie.css';
-import { ReactHiererchyChart } from 'react-hierarchy-chart';
+import React from "react";
+import OrganizationChart from "@dabeng/react-orgchart";
+import './Hie.css'
 
-function Hie() {
-  const nodes = [
-    {
-      name: 'Caleb Matthews',
-      cssClass: 'level1',
-      position: 'Chief Executive Officer',
-      childs: [
-        {
-          name: 'Antonia Sancho',
-          cssClass: 'level2',
-          position: 'HR Manager',
-        },
-        {
-          name: 'Thoms Hilty',
-          cssClass: 'level2',
-          position: 'Marketing Manager',
-          childs: [
-            {
-              name: 'Eyal Matthews',
-              cssClass: 'level3',
-              position: 'Social Media',
-            },
-            {
-              name: 'Adam Mark',
-              cssClass: 'level3',
-              position: 'Offline Marketing',
-            },
-          ],
-        },
-        {
-          name: 'Barry Roy',
-          cssClass: 'level2',
-          position: 'Production Manager',
-          childs: [
-            {
-              name: 'Ligia Opera',
-              cssClass: 'level3',
-              position: 'Supply Chain',
-            },
-            {
-              name: 'Moran Perry',
-              cssClass: 'level3',
-              position: 'Operational Manager',
-            },
-          ],
-        },
-      ],
-    },
-  ];
+const DragDropChart = () => {
+  const ds = {
+    id: "n1",
+    name: "Lao Lao",
+    title: "general manager",
+    children: [
+      { id: "n2", name: "Bo Miao", title: "department manager" },
+      {
+        id: "n3",
+        name: "Su Miao",
+        title: "department manager",
+        children: [
+          { id: "n4", name: "Tie Hua", title: "senior engineer" },
+          {
+            id: "n5",
+            name: "Hei Hei",
+            title: "senior engineer",
+            children: [
+              { id: "n6", name: "Dan Dan", title: "engineer" },
+              { id: "n7", name: "Xiang Xiang", title: "engineer" }
+            ]
+          },
+          { id: "n8", name: "Pang Pang", title: "senior engineer" }
+        ]
+      },
+      { id: "n9", name: "Hong Miao", title: "department manager" },
+      {
+        id: "n10",
+        name: "Chun Miao",
+        title: "department manager",
+        children: [{ id: "n11", name: "Yue Yue", title: "senior engineer" }]
+      }
+    ]
+  };
 
-  return (
-    <div className="App">
-      <h1>Vertical View</h1>
-      <div className="hierarchy-viewer">
-        <ReactHiererchyChart
-          nodes={nodes}
-          direction="vertical"
-          randerNode={(node) => {
-            return (
-              <div className="node-template">
-                <strong>{node.position} </strong>
-                <span>{node.name} </span>
-                <button onClick={() => { alert(node.name); }}>ok</button>
-              </div>
-            );
-          }}
-        />
-      </div>
-    </div>
-  );
-}
+  return <OrganizationChart datasource={ds} draggable={true} />;
+};
 
-export default Hie;
+export default DragDropChart;
