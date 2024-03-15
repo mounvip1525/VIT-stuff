@@ -1,10 +1,12 @@
 import pandas as pd
-import re
-import torch
-from nltk.tokenize import word_tokenize
+import nltk
 from nltk.corpus import stopwords
+from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem import PorterStemmer
-from transformers import DistilBertTokenizerFast, SentenceTransformer, util
+
+# Download NLTK resources
+nltk.download('punkt')
+nltk.download('stopwords')
 
 # Load the dataset from Excel file (replace with your file path)
 df = pd.read_excel("your_dataset.xlsx")
@@ -28,8 +30,8 @@ weight_dict = {
     "Strategic outlook": 0.05
 }
 
-# Define custom stopwords list from NLTK
-custom_stopwords = set(stopwords.words('english'))
+# Initialize Porter Stemmer
+porter = PorterStemmer()
 
 def preprocess_text(text, weights):
     """
@@ -43,85 +45,26 @@ def preprocess_text(text, weights):
         A string (or list of strings) containing the preprocessed text.
     """
     text = text.lower()  # Convert text to lowercase
+    
+    # Tokenize text into sentences using NLTK
+    sentences = sent_tokenize(text)
 
-    # Remove non-alphanumeric characters and punctuation
-    text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+    preprocessed_sentences = []
+    # Process each sentence
+    for sentence in sentences:
+        # Tokenize sentence into words
+        tokens = word_tokenize(sentence)
+        # Remove stopwords and apply weights
+        stop_words = set(stopwords.words('english'))
+        weighted_words = [porter.stem(word) * weights.get(word, 1) for word in tokens if word.lower() not in stop_words]
+        # Join weighted words into sentence
+        weighted_sentence = ' '.join(weighted_words)
+        preprocessed_sentences.append(weighted_sentence)
 
-    # Tokenize text using NLTK
-    tokens = word_tokenize(text)
-
-    # Remove stopwords and perform stemming
-    ps = PorterStemmer()
-    weighted_words = [ps.stem(token) * weights.get('word', 1) for token in tokens if token.lower() not in custom_stopwords]
-
-    # Join weighted words into text
-    weighted_text = ' '.join(weighted_words)
-
-    return weighted_text
+    return preprocessed_sentences
 
 # Apply preprocessing
 df["processed_info"] = df["combined_info"].apply(lambda x: preprocess_text(x, weight_dict))
 
-# Initialize DistilBERT tokenizer and model
-tokenizer = DistilBertTokenizerFast.from_pretrained("distilbert-base-uncased")
-model = SentenceTransformer("distilbert-base-uncased")
-
-def encode_text(text, tokenizer, model):
-    """
-    Encodes text using the DistilBERT model.
-
-    Args:
-        text: A string or list of strings containing text to be encoded.
-        tokenizer: A tokenizer object for tokenizing the text.
-        model: A SentenceTransformer model for encoding the text.
-
-    Returns:
-        A tensor containing the encoded representations of the input text.
-    """
-    # Tokenize text
-    tokenized_text = tokenizer(text, padding=True, truncation=True, return_tensors="pt")
-
-    # Encode text
-    with torch.no_grad():
-        model_output = model(**tokenized_text)
-
-    # Extract embeddings
-    embeddings = model_output["sentence_embedding"]
-
-    return embeddings
-
-# Apply encoding to preprocessed text
-df["encoded_info"] = df["processed_info"].apply(lambda x: encode_text(x, tokenizer, model))
-
-def search(query, encoded_data, top_k=5):
-    """
-    Searches for similar items based on a query.
-
-    Args:
-        query (str): The user's search query.
-        encoded_data (torch.Tensor): Encoded representations of the dataset items.
-        top_k (int): Number of top results to return.
-
-    Returns:
-        list: A list of tuples containing (index, score) pairs of the most similar items.
-    """
-    # Encode the query
-    query_embedding = model.encode(query, convert_to_tensor=True)
-
-    # Calculate cosine similarity between the query and dataset items
-    cosine_scores = util.pytorch_cos_sim(query_embedding, encoded_data)[0]
-
-    # Get indices and scores of top k most similar items
-    top_results = torch.topk(cosine_scores, k=top_k)
-
-    # Convert indices and scores to a list of tuples
-    results = [(idx.item(), score.item()) for idx, score in zip(top_results.indices, top_results.values)]
-    
-    return results
-
-# Example usage:
-# Assuming you have encoded_info as encoded representations of your dataset items
-encoded_data = df["encoded_info"].tolist()  # Convert DataFrame column to list of tensors
-query = "customer campaign management and compliance"
-results = search(query, encoded_data)
-print(results)
+# Example usage (might show single or multiple sentences)
+print(df["processed_info"].head())
