@@ -1,7 +1,10 @@
 import pandas as pd
-import spacy
+import re
 import torch
-from sentence_transformers import SentenceTransformer, util
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from transformers import DistilBertTokenizerFast, SentenceTransformer, util
 
 # Load the dataset from Excel file (replace with your file path)
 df = pd.read_excel("your_dataset.xlsx")
@@ -25,8 +28,8 @@ weight_dict = {
     "Strategic outlook": 0.05
 }
 
-# Load SpaCy English model
-nlp = spacy.load("en_core_web_sm")
+# Define custom stopwords list from NLTK
+custom_stopwords = set(stopwords.words('english'))
 
 def preprocess_text(text, weights):
     """
@@ -41,62 +44,62 @@ def preprocess_text(text, weights):
     """
     text = text.lower()  # Convert text to lowercase
 
-    # Tokenize text using SpaCy
-    doc = nlp(text)
+    # Remove non-alphanumeric characters and punctuation
+    text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
 
-    # Remove stopwords and apply weights
-    weighted_words = [token.text * weights.get(token.pos_, 1) for token in doc if token.text.lower() not in STOP_WORDS]
+    # Tokenize text using NLTK
+    tokens = word_tokenize(text)
+
+    # Remove stopwords and perform stemming
+    ps = PorterStemmer()
+    weighted_words = [ps.stem(token) * weights.get('word', 1) for token in tokens if token.lower() not in custom_stopwords]
 
     # Join weighted words into text
     weighted_text = ' '.join(weighted_words)
 
-    # Check if text contains multiple sentences
-    if len(list(doc.sents)) > 1:
-        # Split text into sentences and preprocess each sentence recursively
-        sentences = [preprocess_text(sentence.text, weights) for sentence in doc.sents]
-        return sentences
-    else:
-        # Text contains a single sentence, return preprocessed single string
-        return weighted_text
+    return weighted_text
 
 # Apply preprocessing
 df["processed_info"] = df["combined_info"].apply(lambda x: preprocess_text(x, weight_dict))
 
-# Example usage (might show single or multiple sentences)
-print(df["processed_info"].head())
-
 # Initialize DistilBERT tokenizer and model
-model_name = "distilbert-base-uncased"
-model = SentenceTransformer(model_name)
+tokenizer = DistilBertTokenizerFast.from_pretrained("distilbert-base-uncased")
+model = SentenceTransformer("distilbert-base-uncased")
 
-def encode_text(text, model):
+def encode_text(text, tokenizer, model):
     """
     Encodes text using the DistilBERT model.
 
     Args:
         text: A string or list of strings containing text to be encoded.
+        tokenizer: A tokenizer object for tokenizing the text.
         model: A SentenceTransformer model for encoding the text.
 
     Returns:
         A tensor containing the encoded representations of the input text.
     """
+    # Tokenize text
+    tokenized_text = tokenizer(text, padding=True, truncation=True, return_tensors="pt")
+
     # Encode text
     with torch.no_grad():
-        embeddings = model.encode(text, convert_to_tensor=True)
+        model_output = model(**tokenized_text)
+
+    # Extract embeddings
+    embeddings = model_output["sentence_embedding"]
 
     return embeddings
 
 # Apply encoding to preprocessed text
-df["encoded_info"] = df["processed_info"].apply(lambda x: encode_text(x, model))
+df["encoded_info"] = df["processed_info"].apply(lambda x: encode_text(x, tokenizer, model))
 
-def search(query, encoded_data, filters=None, top_k=5):
+def search(query, encoded_data, top_k=5):
     """
-    Searches for similar items based on a query and applies additional filters.
+    Searches for similar items based on a query.
 
     Args:
         query (str): The user's search query.
         encoded_data (torch.Tensor): Encoded representations of the dataset items.
-        filters (dict): A dictionary containing filter criteria.
         top_k (int): Number of top results to return.
 
     Returns:
@@ -114,56 +117,11 @@ def search(query, encoded_data, filters=None, top_k=5):
     # Convert indices and scores to a list of tuples
     results = [(idx.item(), score.item()) for idx, score in zip(top_results.indices, top_results.values)]
     
-    # Apply filters if provided
-    if filters:
-        results = apply_filters(results, filters)
-    
     return results
 
-def apply_filters(results, filters):
-    """
-    Applies filters to search results.
-
-    Args:
-        results (list): List of tuples containing (index, score) pairs of search results.
-        filters (dict): A dictionary containing filter criteria.
-
-    Returns:
-        list: Filtered list of search results.
-    """
-    filtered_results = []
-
-    for idx, score in results:
-        # Check if item meets filter criteria
-        if meets_filter_criteria(idx, filters):
-            filtered_results.append((idx, score))
-    
-    return filtered_results
-
-def meets_filter_criteria(idx, filters):
-    """
-    Checks if an item meets the filter criteria.
-
-    Args:
-        idx (int): Index of the item in the dataset.
-        filters (dict): A dictionary containing filter criteria.
-
-    Returns:
-        bool: True if the item meets all filter criteria, False otherwise.
-    """
-    # Example: Check if item category matches selected category filter
-    item_category = df.iloc[idx]["category"]
-    if "selected_category" in filters and item_category != filters["selected_category"]:
-        return False
-    
-    # Add more filter criteria checks as needed
-    
-    return True
-
-# Example usage with filters:
+# Example usage:
 # Assuming you have encoded_info as encoded representations of your dataset items
 encoded_data = df["encoded_info"].tolist()  # Convert DataFrame column to list of tensors
 query = "customer campaign management and compliance"
-filters = {"selected_category": "Marketing"}  # Example filter criteria
-results = search(query, encoded_data, filters=filters)
+results = search(query, encoded_data)
 print(results)
