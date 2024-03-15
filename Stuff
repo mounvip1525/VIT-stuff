@@ -1,28 +1,12 @@
 import pandas as pd
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.stem import PorterStemmer
+import torch
+from sentence_transformers import SentenceTransformer, util
+from transformers import DistilBertTokenizer, DistilBertModel
 
-# Download NLTK resources
-nltk.download('punkt')
-nltk.download('stopwords')
-
-stopwords = { i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", 
-    "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", 
-    "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", 
-    "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", 
-    "the", "and", "but", "if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", 
-    "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", 
-    "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", 
-    "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", 
-    "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"
-}
-
-# Load the dataset from Excel file (replace with your file path)
+# Load the dataset
 df = pd.read_excel("your_dataset.xlsx")
 
-# Define relevant columns for preprocessing
+# Define columns to preprocess
 columns_to_preprocess = ["vendor name", "product name", "category", "sub category", "product description", "BPPA Domain", "BPPA Sub domain", "BPPA Sub Sub domain", "Strategic outlook"]
 
 # Combine information from selected columns into a single string
@@ -41,41 +25,56 @@ weight_dict = {
     "Strategic outlook": 0.05
 }
 
-# Initialize Porter Stemmer
-porter = PorterStemmer()
+# Define stopwords
+stopwords = {"the", "a", "an", "we", "should", "them"}
 
+# Initialize DistilBERT tokenizer and model
+tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
+model = DistilBertModel.from_pretrained("distilbert-base-uncased")
+
+# Preprocess text
 def preprocess_text(text, weights):
-    """
-    Preprocesses text for search, handling potential sentences within descriptions.
-
-    Args:
-        text: A string containing text to be preprocessed.
-        weights: A dictionary where keys are column names and values are weights.
-
-    Returns:
-        A string (or list of strings) containing the preprocessed text.
-    """
-    text = text.lower()  # Convert text to lowercase
-    
-    # Tokenize text into sentences using NLTK
-    sentences = sent_tokenize(text)
-
+    text = text.lower()
+    sentences = text.split(".")
     preprocessed_sentences = []
-    # Process each sentence
     for sentence in sentences:
-        # Tokenize sentence into words
-        tokens = word_tokenize(sentence)
-        # Remove stopwords and apply weights
-        stop_words = set(stopwords.words('english'))
-        weighted_words = [porter.stem(word) * weights.get(word, 1) for word in tokens if word.lower() not in stop_words]
-        # Join weighted words into sentence
+        tokens = sentence.split()
+        weighted_words = [word for word in tokens if word.lower() not in stopwords]
         weighted_sentence = ' '.join(weighted_words)
         preprocessed_sentences.append(weighted_sentence)
-
     return preprocessed_sentences
 
 # Apply preprocessing
 df["processed_info"] = df["combined_info"].apply(lambda x: preprocess_text(x, weight_dict))
 
-# Example usage (might show single or multiple sentences)
-print(df["processed_info"].head())
+# Encode text using DistilBERT
+def encode_text(text, tokenizer, model):
+    tokenized_text = tokenizer(text, padding=True, truncation=True, return_tensors="pt", max_length=128)
+    with torch.no_grad():
+        output = model(**tokenized_text)
+    embeddings = output.last_hidden_state.mean(dim=1)
+    return embeddings
+
+# Apply encoding
+encoded_data = []
+for idx, row in df.iterrows():
+    encoded_info = encode_text(row["processed_info"], tokenizer, model)
+    encoded_data.append(encoded_info)
+
+# Ensure all embeddings have the same dimensions
+max_len = max([emb.shape[1] for emb in encoded_data])
+for i, emb in enumerate(encoded_data):
+    if emb.shape[1] < max_len:
+        padding = torch.zeros(1, max_len - emb.shape[1], emb.shape[2])
+        encoded_data[i] = torch.cat((emb, padding), dim=1)
+
+# Define the search function
+def search(query, encoded_data):
+    query_embedding = encode_text(query, tokenizer, model)
+    cosine_scores = util.pytorch_cos_sim(query_embedding, torch.stack(encoded_data)).flatten()
+    return cosine_scores.argsort(descending=True)
+
+# Example usage:
+query = "customer campaign management and compliance"
+results = search(query, encoded_data)
+print(results)
